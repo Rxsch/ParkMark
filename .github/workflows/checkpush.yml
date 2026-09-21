@@ -1,8 +1,12 @@
-name: Nightly Android Build
+name: Android CI/CD
 
 on:
-  schedule:
-    - cron: '0 5 * * *' 
+  # Run whenever code is pushed to main
+  push:
+    branches:
+      - main
+
+  # Allow us to run the workflow manually
   workflow_dispatch:
 
 jobs:
@@ -10,24 +14,36 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # Download the repository
+      # Get the project from GitHub
       - name: Checkout
         uses: actions/checkout@v4
-    #Install Java
+
+      # Set up Java
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
+
       # Set up Gradle
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
-        # Give Gradle permission to run
+
+      # Allow Gradle to execute
       - name: Make Gradle executable
         run: chmod +x ./gradlew
-        # Run the project's unit tests
+
+      # Run tests
       - name: Run tests
         run: ./gradlew test
-     # Build the debug APK
+
+      # Build the debug APK
       - name: Build debug APK
         run: ./gradlew assembleDebug
+
+      # Save the APK
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ParkMark-debug
+          path: app/build/outputs/apk/debug/app-debug.apk
