@@ -1,0 +1,33 @@
+name: Nightly Android Build
+
+on:
+  schedule:
+    - cron: '0 5 * * *' 
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Download the repository
+      - name: Checkout
+        uses: actions/checkout@v4
+    #Install Java
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      # Set up Gradle
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        # Give Gradle permission to run
+      - name: Make Gradle executable
+        run: chmod +x ./gradlew
+        # Run the project's unit tests
+      - name: Run tests
+        run: ./gradlew test
+     # Build the debug APK
+      - name: Build debug APK
+        run: ./gradlew assembleDebug
