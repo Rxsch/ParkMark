@@ -1,6 +1,7 @@
 package com.example.parkmark;
 
 import android.os.Bundle;
+import android.widget.EditText;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -11,14 +12,42 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
 
-    // Load the interface and keep its content clear of the system bars.
+    private int currentTab = R.id.navHome;
+    private String parkingNotes = "";
+
+    // Load the initial screen and restore temporary UI state.
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().hide();
+        }
+
+        if (savedInstanceState != null) {
+            currentTab = savedInstanceState.getInt(
+                    "currentTab", R.id.navHome
+            );
+
+            parkingNotes = savedInstanceState.getString(
+                    "parkingNotes", ""
+            );
+        }
+
+        showPage(currentTab);
+    }
+
+    // Display the selected layout and reconnect the navigation.
+    private void showPage(int tabId) {
+        currentTab = tabId;
+
+        if (tabId == R.id.navParking) {
+            setContentView(R.layout.activity_parking);
+
+            EditText notesInput = findViewById(R.id.notesInput);
+            notesInput.setText(parkingNotes);
+        } else {
+            setContentView(R.layout.activity_main);
         }
 
         ViewCompat.setOnApplyWindowInsetsListener(
@@ -42,7 +71,41 @@ public class MainActivity extends AppCompatActivity {
                 findViewById(R.id.bottomNavigation);
 
         navigation.setItemActiveIndicatorEnabled(false);
+        navigation.setSelectedItemId(currentTab);
 
-        navigation.setOnItemSelectedListener(item -> true);
+        navigation.setOnItemSelectedListener(item -> {
+            int selectedTab = item.getItemId();
+
+            if (selectedTab != R.id.navHome
+                    && selectedTab != R.id.navParking) {
+                return false;
+            }
+
+            if (selectedTab != currentTab) {
+                rememberNotes();
+                showPage(selectedTab);
+            }
+
+            return true;
+        });
+    }
+
+    // Keep typed notes while switching between the two screens.
+    private void rememberNotes() {
+        if (currentTab == R.id.navParking) {
+            EditText notesInput = findViewById(R.id.notesInput);
+            parkingNotes = notesInput.getText().toString();
+        }
+    }
+
+    // Preserve temporary UI state when the activity is recreated.
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        rememberNotes();
+
+        outState.putInt("currentTab", currentTab);
+        outState.putString("parkingNotes", parkingNotes);
+
+        super.onSaveInstanceState(outState);
     }
 }
