@@ -15,7 +15,7 @@ public class MainActivity extends AppCompatActivity {
     private int currentTab = R.id.navHome;
     private String parkingNotes = "";
 
-    // Load the initial screen and restore temporary UI state.
+    // Load the initial page and restore temporary UI state.
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
         showPage(currentTab);
     }
 
-    // Display the selected layout and reconnect the navigation.
+    // Display the selected page and reconnect its navigation.
     private void showPage(int tabId) {
         currentTab = tabId;
 
@@ -46,7 +46,12 @@ public class MainActivity extends AppCompatActivity {
 
             EditText notesInput = findViewById(R.id.notesInput);
             notesInput.setText(parkingNotes);
+
+        } else if (tabId == R.id.navTimer) {
+            setContentView(R.layout.activity_alerts);
+
         } else {
+            currentTab = R.id.navHome;
             setContentView(R.layout.activity_main);
         }
 
@@ -77,7 +82,8 @@ public class MainActivity extends AppCompatActivity {
             int selectedTab = item.getItemId();
 
             if (selectedTab != R.id.navHome
-                    && selectedTab != R.id.navParking) {
+                    && selectedTab != R.id.navParking
+                    && selectedTab != R.id.navTimer) {
                 return false;
             }
 
@@ -90,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    // Keep typed notes while switching between the two screens.
+    // Keep the typed notes when leaving the Parking page.
     private void rememberNotes() {
         if (currentTab == R.id.navParking) {
             EditText notesInput = findViewById(R.id.notesInput);
@@ -98,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // Preserve temporary UI state when the activity is recreated.
+    // Preserve the current tab and notes during activity recreation.
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         rememberNotes();
