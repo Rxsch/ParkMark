@@ -2,6 +2,7 @@ package com.example.parkmark;
 
 import android.os.Bundle;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -50,9 +51,23 @@ public class MainActivity extends AppCompatActivity {
         } else if (tabId == R.id.navTimer) {
             setContentView(R.layout.activity_alerts);
 
+        } else if (tabId == R.id.navMap) {
+            setContentView(R.layout.activity_map);
+
+            findViewById(R.id.navigateButton).setOnClickListener(view -> {
+                Toast.makeText(
+                        this,
+                        "Navigation will be available in the final version",
+                        Toast.LENGTH_SHORT
+                ).show();
+            });
+
         } else {
             currentTab = R.id.navHome;
             setContentView(R.layout.activity_main);
+
+            findViewById(R.id.openMapButton)
+                    .setOnClickListener(view -> showPage(R.id.navMap));
         }
 
         ViewCompat.setOnApplyWindowInsetsListener(
@@ -83,7 +98,8 @@ public class MainActivity extends AppCompatActivity {
 
             if (selectedTab != R.id.navHome
                     && selectedTab != R.id.navParking
-                    && selectedTab != R.id.navTimer) {
+                    && selectedTab != R.id.navTimer
+                    && selectedTab != R.id.navMap){
                 return false;
             }
 
