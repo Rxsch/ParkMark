@@ -2,6 +2,7 @@ package com.example.parkmark;
 
 import android.os.Bundle;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -15,7 +16,6 @@ public class MainActivity extends AppCompatActivity {
     private int currentTab = R.id.navHome;
     private String parkingNotes = "";
 
-    // Load the initial page and restore temporary UI state.
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,7 +37,6 @@ public class MainActivity extends AppCompatActivity {
         showPage(currentTab);
     }
 
-    // Display the selected page and reconnect its navigation.
     private void showPage(int tabId) {
         currentTab = tabId;
 
@@ -50,9 +49,23 @@ public class MainActivity extends AppCompatActivity {
         } else if (tabId == R.id.navTimer) {
             setContentView(R.layout.activity_alerts);
 
+        } else if (tabId == R.id.navMap) {
+            setContentView(R.layout.activity_map);
+
+            findViewById(R.id.navigateButton).setOnClickListener(view -> {
+                Toast.makeText(
+                        this,
+                        "Navigation will be available in the final version",
+                        Toast.LENGTH_SHORT
+                ).show();
+            });
+
         } else {
             currentTab = R.id.navHome;
             setContentView(R.layout.activity_main);
+
+            findViewById(R.id.openMapButton)
+                    .setOnClickListener(view -> showPage(R.id.navMap));
         }
 
         ViewCompat.setOnApplyWindowInsetsListener(
@@ -83,7 +96,8 @@ public class MainActivity extends AppCompatActivity {
 
             if (selectedTab != R.id.navHome
                     && selectedTab != R.id.navParking
-                    && selectedTab != R.id.navTimer) {
+                    && selectedTab != R.id.navTimer
+                    && selectedTab != R.id.navMap){
                 return false;
             }
 
@@ -96,7 +110,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    // Keep the typed notes when leaving the Parking page.
     private void rememberNotes() {
         if (currentTab == R.id.navParking) {
             EditText notesInput = findViewById(R.id.notesInput);
@@ -104,7 +117,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // Preserve the current tab and notes during activity recreation.
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         rememberNotes();
