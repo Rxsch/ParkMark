@@ -7,7 +7,6 @@
     android:orientation="vertical"
     android:background="#F7F8FA">
 
-    <!-- Header -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="56dp">
@@ -35,13 +34,11 @@
 
     </FrameLayout>
 
-    <!-- Static Map -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1">
 
-        <!-- Navigate Button -->
         <ImageView
             android:id="@+id/mapImage"
             android:layout_width="match_parent"
@@ -67,13 +64,11 @@
 
     </FrameLayout>
 
-    <!-- Divider -->
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="#E6E6E6" />
 
-    <!-- Bottom Navigation -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"

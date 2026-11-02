@@ -16,7 +16,6 @@ public class MainActivity extends AppCompatActivity {
     private int currentTab = R.id.navHome;
     private String parkingNotes = "";
 
-    // Load the initial page and restore temporary UI state.
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,7 +37,6 @@ public class MainActivity extends AppCompatActivity {
         showPage(currentTab);
     }
 
-    // Display the selected page and reconnect its navigation.
     private void showPage(int tabId) {
         currentTab = tabId;
 
@@ -112,7 +110,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    // Keep the typed notes when leaving the Parking page.
     private void rememberNotes() {
         if (currentTab == R.id.navParking) {
             EditText notesInput = findViewById(R.id.notesInput);
@@ -120,7 +117,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // Preserve the current tab and notes during activity recreation.
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         rememberNotes();
