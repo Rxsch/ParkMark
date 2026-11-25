@@ -3,12 +3,20 @@ package com.example.parkmark;
 import android.os.Bundle;
 import android.widget.EditText;
 import android.widget.Toast;
+import android.widget.TextView;
 import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.net.Uri;
+import android.location.Address;
+import android.location.Geocoder;
+import android.content.ContentResolver;
+
+import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.Executors;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -17,6 +25,8 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -44,6 +54,9 @@ public class MainActivity extends AppCompatActivity {
 
     private double savedLatitude = Double.NaN;
     private double savedLongitude = Double.NaN;
+    private String parkingAddress = "";
+    private long parkingSavedTime = 0;
+    private String parkingPhotoUri = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +67,20 @@ public class MainActivity extends AppCompatActivity {
 
         parkingPreferences =
                 getSharedPreferences("ParkMarkParking", MODE_PRIVATE);
+
+        parkingNotes = parkingPreferences.getString("parkingNotes", "");
+
+        parkingAddress = parkingPreferences.getString(
+                "parkingAddress", ""
+        );
+
+        parkingSavedTime = parkingPreferences.getLong(
+                "parkingSavedTime", 0
+        );
+
+        parkingPhotoUri = parkingPreferences.getString(
+                "parkingPhotoUri", ""
+        );
 
         savedLatitude = Double.longBitsToDouble(
                 parkingPreferences.getLong(
@@ -78,9 +105,7 @@ public class MainActivity extends AppCompatActivity {
                     "currentTab", R.id.navHome
             );
 
-            parkingNotes = savedInstanceState.getString(
-                    "parkingNotes", ""
-            );
+            parkingNotes = savedInstanceState.getString("parkingNotes", parkingNotes);
         }
 
         showPage(currentTab);
@@ -100,14 +125,49 @@ public class MainActivity extends AppCompatActivity {
         if (tabId == R.id.navParking) {
             setContentView(R.layout.activity_parking);
 
+            updateParkingPhoto();
+
+            findViewById(R.id.selectPhotoButton)
+                    .setOnClickListener(view ->
+                            photoPicker.launch(new String[]{"image/*"})
+                    );
+
             EditText notesInput = findViewById(R.id.notesInput);
             notesInput.setText(parkingNotes);
+
+            findViewById(R.id.saveNotesButton)
+                    .setOnClickListener(view -> {
+
+                        String notes = notesInput.getText()
+                                .toString().trim();
+
+                        if (notes.isEmpty()) {
+                            notesInput.setError("Please enter parking notes");
+
+                            Toast.makeText(
+                                    this,
+                                    "Parking notes cannot be empty",
+                                    Toast.LENGTH_SHORT
+                            ).show();
+
+                            return;
+                        }
+
+                        rememberNotes();
+
+                        Toast.makeText(
+                                this,
+                                "Parking notes saved!",
+                                Toast.LENGTH_SHORT
+                        ).show();
+                    });
 
             findViewById(R.id.updateLocationButton)
                     .setOnClickListener(view -> saveParkingLocation());
 
         } else if (tabId == R.id.navTimer) {
             setContentView(R.layout.activity_alerts);
+            updateParkingSummary();
 
         } else if (tabId == R.id.navMap) {
             setContentView(R.layout.activity_map);
@@ -119,6 +179,7 @@ public class MainActivity extends AppCompatActivity {
         } else {
             currentTab = R.id.navHome;
             setContentView(R.layout.activity_main);
+            updateParkingSummary();
 
             findViewById(R.id.openMapButton)
                     .setOnClickListener(view -> showPage(R.id.navMap));
@@ -172,10 +233,17 @@ public class MainActivity extends AppCompatActivity {
     private void rememberNotes() {
         if (currentTab == R.id.navParking) {
             EditText notesInput = findViewById(R.id.notesInput);
-            parkingNotes = notesInput.getText().toString();
+
+            if (notesInput != null) {
+                parkingNotes = notesInput.getText()
+                        .toString().trim();
+
+                parkingPreferences.edit()
+                        .putString("parkingNotes", parkingNotes)
+                        .apply();
+            }
         }
     }
-
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         rememberNotes();
@@ -330,6 +398,22 @@ public class MainActivity extends AppCompatActivity {
                 savedLatitude = location.getLatitude();
                 savedLongitude = location.getLongitude();
 
+                parkingSavedTime = System.currentTimeMillis();
+
+                parkingAddress = String.format(
+                        Locale.US,
+                        "%.5f, %.5f",
+                        savedLatitude,
+                        savedLongitude
+                );
+
+                parkingPreferences.edit()
+                        .putLong("parkingSavedTime", parkingSavedTime)
+                        .putString("parkingAddress", parkingAddress)
+                        .apply();
+
+                updateParkingAddress(savedLatitude, savedLongitude);
+
                 parkingPreferences.edit()
                         .putLong(
                                 "latitude",
@@ -442,6 +526,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        updateParkingSummary();
 
         if (mapView != null) {
             mapView.onResume();
@@ -450,6 +535,8 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onPause() {
+
+        rememberNotes();
 
         if (mapView != null) {
             mapView.onPause();
@@ -485,6 +572,192 @@ public class MainActivity extends AppCompatActivity {
 
         if (mapView != null) {
             mapView.onLowMemory();
+        }
+    }
+
+    private void updateParkingAddress(double latitude,
+                                      double longitude) {
+
+        long requestTime = parkingSavedTime;
+
+        java.util.concurrent.ExecutorService executor =
+                Executors.newSingleThreadExecutor();
+
+        executor.execute(() -> {
+            try {
+                Geocoder geocoder = new Geocoder(
+                        this, Locale.getDefault()
+                );
+
+                List<Address> addresses =
+                        geocoder.getFromLocation(
+                                latitude, longitude, 1
+                        );
+
+                if (addresses != null && !addresses.isEmpty()) {
+
+                    String address =
+                            addresses.get(0).getAddressLine(0);
+
+                    runOnUiThread(() -> {
+
+                        if (isDestroyed()
+                                || requestTime != parkingSavedTime
+                                || address == null
+                                || address.trim().isEmpty()) {
+                            return;
+                        }
+
+                        parkingAddress = address;
+
+                        parkingPreferences.edit()
+                                .putString(
+                                        "parkingAddress",
+                                        parkingAddress
+                                )
+                                .apply();
+
+                        updateParkingSummary();
+                    });
+                }
+
+            } catch (Exception e) {
+            }
+        });
+
+        executor.shutdown();
+    }
+
+    private String getSavedTimeText() {
+
+        if (parkingSavedTime == 0) {
+            return "Not parked yet";
+        }
+
+        long elapsed = Math.max(
+                0,
+                System.currentTimeMillis() - parkingSavedTime
+        );
+
+        long minutes = elapsed / 60000;
+        long hours = minutes / 60;
+        long days = hours / 24;
+
+        if (minutes < 1) {
+            return "Saved just now";
+        }
+
+        if (minutes < 60) {
+            return "Saved " + minutes + "m ago";
+        }
+
+        if (hours < 24) {
+            return "Saved " + hours + "h "
+                    + (minutes % 60) + "m ago";
+        }
+
+        return "Saved " + days + "d ago";
+    }
+
+    private void updateParkingSummary() {
+
+        String address = parkingAddress.isEmpty()
+                ? "No parking location saved"
+                : parkingAddress;
+
+        String details = parkingNotes.isEmpty()
+                ? "No parking notes added"
+                : parkingNotes;
+
+        if (currentTab == R.id.navHome) {
+
+            TextView addressText =
+                    findViewById(R.id.addressText);
+
+            TextView savedTimeText =
+                    findViewById(R.id.savedTimeText);
+
+            TextView detailsText =
+                    findViewById(R.id.parkingDetailsText);
+
+            addressText.setText(address);
+            savedTimeText.setText(getSavedTimeText());
+            detailsText.setText(details);
+
+        } else if (currentTab == R.id.navTimer) {
+
+            TextView addressText =
+                    findViewById(R.id.alertAddressText);
+
+            TextView savedTimeText =
+                    findViewById(R.id.alertSavedTimeText);
+
+            TextView detailsText =
+                    findViewById(R.id.alertParkingDetailsText);
+
+            addressText.setText(address);
+            savedTimeText.setText(getSavedTimeText());
+            detailsText.setText(details);
+        }
+    }
+
+    private final ActivityResultLauncher<String[]> photoPicker =
+            registerForActivityResult(
+                    new ActivityResultContracts.OpenDocument(),
+                    uri -> {
+
+                        if (uri == null) {
+                            return;
+                        }
+
+                        try {
+                            getContentResolver().takePersistableUriPermission(
+                                    uri,
+                                    Intent.FLAG_GRANT_READ_URI_PERMISSION
+                            );
+                        } catch (SecurityException ignored) {
+                        }
+
+                        parkingPhotoUri = uri.toString();
+
+                        parkingPreferences.edit()
+                                .putString("parkingPhotoUri", parkingPhotoUri)
+                                .apply();
+
+                        updateParkingPhoto();
+
+                        Toast.makeText(
+                                this,
+                                "Parking photo saved!",
+                                Toast.LENGTH_SHORT
+                        ).show();
+                    }
+            );
+
+    private void updateParkingPhoto() {
+
+        if (currentTab != R.id.navParking) {
+            return;
+        }
+
+        android.widget.ImageView parkingPhoto =
+                findViewById(R.id.parkingPhoto);
+
+        if (parkingPhoto == null) {
+            return;
+        }
+
+        if (parkingPhotoUri.isEmpty()) {
+            parkingPhoto.setImageResource(R.drawable.carparked);
+            return;
+        }
+
+        try {
+            parkingPhoto.setImageURI(
+                    Uri.parse(parkingPhotoUri)
+            );
+        } catch (Exception e) {
+            parkingPhoto.setImageResource(R.drawable.carparked);
         }
     }
 }
