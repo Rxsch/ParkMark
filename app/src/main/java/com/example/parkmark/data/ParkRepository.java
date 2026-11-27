@@ -45,6 +45,8 @@ public final class ParkRepository {
                     try { operation.run(database.dao()); }
                     catch (Exception error) { throw new OperationException(error); }
                 });
+                // Alarm reconciliation shares the same serial queue as database updates.
+                com.example.parkmark.reminders.Reminders.reconcile(context, database.dao());
                 ParkingState snapshot = new ParkingState(database.dao());
                 main.post(() -> {
                     state.setValue(snapshot);

@@ -28,6 +28,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import com.example.parkmark.data.*;
 import com.example.parkmark.ui.FormDialog;
+import com.example.parkmark.ui.AlertsController;
 import com.example.parkmark.ui.ParkingMap;
 import com.example.parkmark.util.PhotoStorage;
 import com.example.parkmark.util.TimeText;
@@ -49,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
     private ParkRepository repository;
     private ParkingState state;
     private ParkingMap parkingMap;
+    private AlertsController alerts;
     private int currentTab = R.id.navHome;
     private long editorLocationId = -1;
     private long photoLocationId = -1;
@@ -60,6 +62,11 @@ public class MainActivity extends AppCompatActivity {
     private Toast toast;
 
     // Register activity results before creation so camera and permission results survive recreation.
+    private final ActivityResultLauncher<String> notificationPermission = registerForActivityResult(
+            new ActivityResultContracts.RequestPermission(), granted -> {
+                if (!granted) message("Reminders are saved, but Android notifications are off. Enable them in Reminder settings.");
+                repository.refresh(error -> { if (error != null) message("Could not refresh reminders."); });
+            });
     private final ActivityResultLauncher<String[]> locationPermission = registerForActivityResult(
             new ActivityResultContracts.RequestMultiplePermissions(), result -> {
                 if (hasLocationPermission()) locate();
@@ -78,6 +85,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         repository = ParkRepository.get(this);
         parkingMap = new ParkingMap(this);
+        alerts = new AlertsController(this, repository, this::message, this::requestNotifications);
+        if (getIntent().getBooleanExtra("openAlerts", false)) currentTab = R.id.navTimer;
         if (savedInstanceState != null) {
             currentTab = savedInstanceState.getInt("tab", R.id.navHome);
             photoLocationId = savedInstanceState.getLong("photoLocation", -1);
@@ -135,7 +144,10 @@ public class MainActivity extends AppCompatActivity {
         click(R.id.removePhotoButton, this::removePhoto);
         click(R.id.endParkingButton, this::endParking);
         click(R.id.navigateButton, () -> ParkingMap.navigate(this, current()));
-        click(R.id.extendTimeButton, () -> showPage(R.id.navTimer));
+        click(R.id.extendTimeButton, () -> alerts.timer(state));
+        click(R.id.alertExtendTimeButton, () -> alerts.timer(state));
+        click(R.id.cancelTimerButton, () -> alerts.cancelTimer(state));
+        click(R.id.reminderSettingsButton, alerts::settings);
         if (tab == R.id.navMap) parkingMap.attach(findViewById(R.id.mapContainer), current());
         renderState();
     }
@@ -173,6 +185,7 @@ public class MainActivity extends AppCompatActivity {
         text(R.id.alertParkingDetailsText, details);
         text(R.id.locationStatusText, locating ? "Finding your location…" : "Tap to save a new parking spot");
         updateClock();
+        if (currentTab == R.id.navTimer) alerts.renderStatus(state);
         if (currentTab == R.id.navParking) {
             boolean exists = location != null;
             for (int id : new int[]{R.id.notesInput, R.id.levelInput, R.id.spotInput,
@@ -410,6 +423,7 @@ public class MainActivity extends AppCompatActivity {
         menu.getMenu().add("Parking history").setOnMenuItemClickListener(item -> { history(); return true; });
         menu.getMenu().add("My profile").setOnMenuItemClickListener(item -> { profile(); return true; });
         menu.getMenu().add("Enter parking coordinates").setOnMenuItemClickListener(item -> { manualLocation(); return true; });
+        menu.getMenu().add("Reminder settings").setOnMenuItemClickListener(item -> { alerts.settings(); return true; });
         menu.getMenu().add("About ParkMark").setOnMenuItemClickListener(item -> {
             new MaterialAlertDialogBuilder(this).setTitle("ParkMark")
                     .setMessage("Remember your parking location, photos, and notes. Parking data and your profile are stored on this device.")
@@ -508,7 +522,19 @@ public class MainActivity extends AppCompatActivity {
         @Override public void run() { updateClock(); handler.postDelayed(this, 1000); }
     };
     @Override protected void onStart() { super.onStart(); parkingMap.start(); }
-    @Override protected void onResume() { super.onResume(); parkingMap.resume(); handler.removeCallbacks(ticker); handler.post(ticker); }
+    @Override protected void onResume() {
+        super.onResume(); parkingMap.resume(); handler.removeCallbacks(ticker); handler.post(ticker);
+        repository.refresh(error -> { if (error != null) message("Could not refresh parking data."); });
+    }
+    private void requestNotifications() {
+        if (android.os.Build.VERSION.SDK_INT >= 33 && ContextCompat.checkSelfPermission(this,
+                Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED)
+            notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS);
+    }
+    @Override protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent); setIntent(intent);
+        if (intent.getBooleanExtra("openAlerts", false)) showPage(R.id.navTimer);
+    }
     @Override protected void onPause() { persistDetails(); handler.removeCallbacks(ticker); parkingMap.pause(); super.onPause(); }
     @Override protected void onStop() {
         if (locationRequest != null) locationRequest.cancel();

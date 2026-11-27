@@ -180,6 +180,9 @@
 
             </com.google.android.material.card.MaterialCardView>
 
+            <com.google.android.material.button.MaterialButton android:id="@+id/cancelTimerButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Cancel timer" />
+            <TextView android:id="@+id/reminderStatusText" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="#575757" android:padding="8dp" />
+            <com.google.android.material.button.MaterialButton android:id="@+id/reminderSettingsButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Reminder settings" />
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -212,7 +215,7 @@
                         android:id="@+id/subscriptionNameText"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="UCF PARKING PERMIT"
+                        android:text="No permits saved"
                         android:textColor="#292929"
                         android:textSize="20sp"
                         android:textStyle="bold" />
@@ -225,7 +228,7 @@
                         android:background="@drawable/bg_alert_badge"
                         android:paddingHorizontal="14dp"
                         android:paddingVertical="12dp"
-                        android:text="67 Days Left"
+                        android:text="Add a parking permit to track its expiry"
                         android:textColor="#FF8A26"
                         android:textSize="20sp"
                         android:textStyle="bold" />

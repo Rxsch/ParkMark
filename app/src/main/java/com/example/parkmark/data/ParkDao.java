@@ -28,6 +28,8 @@ public interface ParkDao {
     List<ParkingPhoto> photos(long locationId);
     @Query("SELECT * FROM photos WHERE deleteAfter > 0 AND deleteAfter <= :now")
     List<ParkingPhoto> expiredPhotos(long now);
+    @Query("SELECT COALESCE(MIN(deleteAfter), 0) FROM photos WHERE deleteAfter > 0") long nextPhotoExpiry();
+    @Query("UPDATE photos SET deleteAfter = :deadline WHERE id = :id") void setPhotoExpiry(long id, long deadline);
     @Insert long insertPhoto(ParkingPhoto photo);
     @Query("DELETE FROM photos WHERE id = :id") void deletePhoto(long id);
 
@@ -35,6 +37,7 @@ public interface ParkDao {
     ParkingTimer timer(long locationId);
     @Query("SELECT t.* FROM parking_timers t INNER JOIN parking_locations p ON p.id = t.locationId WHERE p.active = 1 AND p.userId = 1")
     List<ParkingTimer> activeTimers();
+    @Query("SELECT * FROM parking_timers") List<ParkingTimer> allTimers();
     @Insert long insertTimer(ParkingTimer timer);
     @Update void updateTimer(ParkingTimer timer);
     @Query("DELETE FROM parking_timers WHERE locationId = :locationId") void deleteTimer(long locationId);
