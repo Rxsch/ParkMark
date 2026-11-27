@@ -23,7 +23,9 @@ android {
         targetSdk = 37
         versionCode = 1
         versionName = "1.0"
-        manifestPlaceholders["MAPS_API_KEY"] = localProperties.getProperty("MAPS_API_KEY", "")
+        // Keep each developer's Maps key outside version control and support CI/environment injection.
+        manifestPlaceholders["MAPS_API_KEY"] = providers.environmentVariable("MAPS_API_KEY")
+            .orElse(localProperties.getProperty("MAPS_API_KEY", "")).get()
 
         javaCompileOptions {
             annotationProcessorOptions {
