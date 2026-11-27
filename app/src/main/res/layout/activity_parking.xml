@@ -7,6 +7,7 @@
     android:orientation="vertical"
     android:background="#F7F8FA">
 
+    <!-- The shared header keeps the menu available on every tab. -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="56dp">
@@ -20,20 +21,21 @@
             android:padding="12dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_menu"
-            android:contentDescription="Open menu"
+            android:contentDescription="@string/open_menu"
             app:tint="#202020" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="ParkMark"
+            android:text="@string/app_name"
             android:textColor="#202020"
             android:textSize="20sp"
             android:textStyle="bold" />
 
     </FrameLayout>
 
+    <!-- Main content scrolls independently from the bottom navigation. -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -49,7 +51,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Photo:"
+                android:text="@string/photo"
                 android:textColor="#292929"
                 android:textSize="24sp"
                 android:textStyle="bold" />
@@ -71,7 +73,7 @@
                     android:layout_margin="2dp"
                     android:src="@drawable/ic_car"
                     android:scaleType="centerCrop"
-                    android:contentDescription="Photo of your parked car" />
+                    android:contentDescription="@string/photo_of_your_parked_car" />
 
             </com.google.android.material.card.MaterialCardView>
 
@@ -80,7 +82,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:layout_marginTop="10dp"
-                android:text="Choose Photo"
+                android:text="@string/choose_photo"
                 android:textAllCaps="false"
                 android:textColor="#FFFFFF"
                 app:backgroundTint="#FF8A00"
@@ -90,29 +92,29 @@
                 android:id="@+id/takePhotoButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Take Photo" />
-            <TextView android:id="@+id/photoCountText" android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:textColor="#292929" android:text="No parking photos yet" />
+                android:text="@string/take_photo" />
+            <TextView android:id="@+id/photoCountText" android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:textColor="#292929" android:text="@string/no_parking_photos_yet" />
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
-                <com.google.android.material.button.MaterialButton android:id="@+id/previousPhotoButton" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Previous" />
-                <com.google.android.material.button.MaterialButton android:id="@+id/nextPhotoButton" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Next" />
+                <com.google.android.material.button.MaterialButton android:id="@+id/previousPhotoButton" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="@string/previous" />
+                <com.google.android.material.button.MaterialButton android:id="@+id/nextPhotoButton" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="@string/next" />
             </LinearLayout>
-            <com.google.android.material.button.MaterialButton android:id="@+id/photoRetentionButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Photo retention" />
-            <com.google.android.material.button.MaterialButton android:id="@+id/removePhotoButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Remove photo" />
-            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:text="Garage level" android:labelFor="@id/levelInput" android:textColor="#292929" />
-            <EditText android:id="@+id/levelInput" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:inputType="textCapSentences" android:hint="e.g. 3" android:maxLength="50" android:textColor="#292929" />
-            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Parking spot / row" android:labelFor="@id/spotInput" android:textColor="#292929" />
-            <EditText android:id="@+id/spotInput" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:inputType="textCapSentences" android:hint="e.g. Row C, space 24" android:maxLength="100" android:textColor="#292929" />
+            <com.google.android.material.button.MaterialButton android:id="@+id/photoRetentionButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/photo_retention" />
+            <com.google.android.material.button.MaterialButton android:id="@+id/removePhotoButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/remove_photo" />
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:text="@string/garage_level" android:labelFor="@id/levelInput" android:textColor="#292929" />
+            <EditText android:importantForAutofill="no" android:id="@+id/levelInput" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:inputType="textCapSentences" android:maxLength="50" android:textColor="#292929" />
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/parking_spot_row" android:labelFor="@id/spotInput" android:textColor="#292929" />
+            <EditText android:importantForAutofill="no" android:id="@+id/spotInput" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:inputType="textCapSentences" android:maxLength="100" android:textColor="#292929" />
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
                 android:labelFor="@id/notesInput"
-                android:text="Notes:"
+                android:text="@string/notes"
                 android:textColor="#292929"
                 android:textSize="24sp"
                 android:textStyle="bold" />
 
-            <EditText
+            <EditText android:importantForAutofill="no"
                 android:id="@+id/notesInput"
                 android:layout_width="match_parent"
                 android:layout_height="120dp"
@@ -123,7 +125,7 @@
                 android:padding="12dp"
                 android:textColor="#292929"
                 android:textSize="16sp"
-                android:hint="Enter garage level, row, or parking spot"
+
                 android:maxLength="250" />
 
             <com.google.android.material.button.MaterialButton
@@ -131,7 +133,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:layout_marginTop="12dp"
-                android:text="Save Details"
+                android:text="@string/save_details"
                 android:textAllCaps="false"
                 android:textColor="#FFFFFF"
                 app:backgroundTint="#FF8A00"
@@ -141,12 +143,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="28dp"
-                android:text="GPS:"
+                android:text="@string/gps"
                 android:textColor="#292929"
                 android:textSize="24sp"
                 android:textStyle="bold" />
 
-            <TextView android:id="@+id/parkingAddressText" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="#292929" android:text="No parking location saved" />
+            <TextView android:id="@+id/parkingAddressText" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="#292929" android:text="@string/no_parking_location_saved" />
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/updateLocationButton"
                 android:layout_width="160dp"
@@ -154,7 +156,7 @@
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="24dp"
                 android:layout_marginBottom="24dp"
-                android:text="Update\nLocation"
+                android:text="@string/update_nlocation"
                 android:textAllCaps="false"
                 android:textColor="#FF8A00"
                 android:textSize="18sp"
@@ -165,7 +167,7 @@
                 app:iconSize="18dp"
                 app:iconTint="#FF8A00" />
 
-            <com.google.android.material.button.MaterialButton android:id="@+id/endParkingButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Finish Parking" />
+            <com.google.android.material.button.MaterialButton android:id="@+id/endParkingButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/finish_parking" />
         </LinearLayout>
 
     </ScrollView>
@@ -175,6 +177,7 @@
         android:layout_height="1dp"
         android:background="#E6E6E6" />
 
+    <!-- Persistent navigation mirrors the four screens in the design document. -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"

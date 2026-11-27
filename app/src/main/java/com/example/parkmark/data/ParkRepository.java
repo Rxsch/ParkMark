@@ -46,7 +46,8 @@ public final class ParkRepository {
                     catch (Exception error) { throw new OperationException(error); }
                 });
                 // Alarm reconciliation shares the same serial queue as database updates.
-                com.example.parkmark.reminders.Reminders.reconcile(context, database.dao());
+                try { com.example.parkmark.reminders.Reminders.reconcile(context, database.dao()); }
+                catch (RuntimeException error) { android.util.Log.e("ParkMark", "Could not reconcile reminders", error); }
                 ParkingState snapshot = new ParkingState(database.dao());
                 main.post(() -> {
                     state.setValue(snapshot);

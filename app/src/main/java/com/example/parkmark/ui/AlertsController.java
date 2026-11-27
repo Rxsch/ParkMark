@@ -90,7 +90,7 @@ public final class AlertsController {
                 ? "Notifications are off. Enable them to receive parking and permit reminders."
                 : !Reminders.preciseAlarmsAvailable(activity)
                 ? "Android may delay reminders. Allow precise alarms in Reminder settings."
-                : "Reminders are enabled. You can manage permissions in Reminder settings.");
+                : "Android allows notifications and precise alarms. Reminders follow each timer or permit’s settings.");
         activity.findViewById(R.id.cancelTimerButton).setEnabled(state != null && state.timer != null);
         TextView button = activity.findViewById(R.id.alertExtendTimeButton);
         button.setText(state != null && state.timer != null ? "Extend time" : "Set timer");

@@ -7,6 +7,7 @@
     android:orientation="vertical"
     android:background="#F7F8FA">
 
+    <!-- The shared header keeps the menu available on every tab. -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="56dp">
@@ -20,20 +21,21 @@
             android:padding="12dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_menu"
-            android:contentDescription="Open menu"
+            android:contentDescription="@string/open_menu"
             app:tint="#202020" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="ParkMark"
+            android:text="@string/app_name"
             android:textSize="20sp"
             android:textStyle="bold"
             android:textColor="#202020" />
 
     </FrameLayout>
 
+    <!-- Main content scrolls independently from the bottom navigation. -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -62,7 +64,7 @@
                     android:src="@drawable/ic_location"
                     android:padding="56dp"
                     android:scaleType="fitCenter"
-                    android:contentDescription="Save parking location" />
+                    android:contentDescription="@string/save_parking_location" />
 
             </FrameLayout>
 
@@ -72,7 +74,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:paddingBottom="16dp"
-                android:text="Tap to save a new parking spot"
+                android:text="@string/tap_to_save_a_new_parking_spot"
                 android:textColor="#575757" />
 
             <com.google.android.material.card.MaterialCardView
@@ -114,7 +116,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="CURRENT PARKING"
+                                android:text="@string/current_parking"
                                 android:textColor="#FF8A00"
                                 android:textSize="12sp"
                                 android:textStyle="bold" />
@@ -123,7 +125,7 @@
                                 android:id="@+id/savedTimeText"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Saved 2h ago"
+                                android:text="@string/not_parked_yet"
                                 android:textColor="#858585"
                                 android:textSize="12sp" />
 
@@ -143,7 +145,7 @@
                                 android:layout_height="wrap_content"
                                 android:paddingHorizontal="10dp"
                                 android:paddingVertical="6dp"
-                                android:text="2h 14m left"
+                                android:text="@string/no_timer_set"
                                 android:textColor="#FF8A00"
                                 android:textSize="12sp"
                                 android:textStyle="bold" />
@@ -157,7 +159,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="14dp"
-                        android:text="4304 Scorpius St, Orlando, FL 32816"
+                        android:text="@string/no_parking_location_saved"
                         android:textColor="#292929"
                         android:textSize="20sp"
                         android:textStyle="bold" />
@@ -167,7 +169,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
-                        android:text="Level 3 • Row C • Near elevator 2"
+                        android:text="@string/no_parking_notes_added"
                         android:textColor="#858585"
                         android:textSize="14sp" />
 
@@ -183,7 +185,7 @@
                             android:layout_height="48dp"
                             android:layout_weight="1"
                             android:layout_marginEnd="8dp"
-                            android:text="Open map"
+                            android:text="@string/open_map"
                             android:textAllCaps="false"
                             android:textSize="12sp"
                             android:textColor="#303030"
@@ -199,7 +201,7 @@
                             android:layout_width="0dp"
                             android:layout_height="48dp"
                             android:layout_weight="1"
-                            android:text="Extend time"
+                            android:text="@string/extend_time"
                             android:textAllCaps="false"
                             android:textSize="12sp"
                             android:textColor="#FF8A00"
@@ -225,6 +227,7 @@
         android:layout_height="1dp"
         android:background="#E6E6E6" />
 
+    <!-- Persistent navigation mirrors the four screens in the design document. -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"

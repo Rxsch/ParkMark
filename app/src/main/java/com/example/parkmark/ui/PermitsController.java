@@ -27,6 +27,7 @@ public final class PermitsController {
     private final ParkRepository repository;
     private final Consumer<String> message;
     private final Runnable requestNotifications;
+    private final java.util.Map<TextView, Long> expiryLabels = new java.util.LinkedHashMap<>();
 
     public PermitsController(AppCompatActivity activity, ParkRepository repository,
                              Consumer<String> message, Runnable requestNotifications) {
@@ -39,6 +40,7 @@ public final class PermitsController {
         LinearLayout container = activity.findViewById(R.id.permitContainer);
         if (container == null) return;
         container.removeAllViews();
+        expiryLabels.clear();
         if (permits.isEmpty()) {
             TextView empty = label("No parking permits saved. Add a permit to track its expiration.", 16);
             empty.setPadding(dp(8), dp(8), dp(8), dp(16));
@@ -60,6 +62,7 @@ public final class PermitsController {
             TextView remaining = label(remaining(permit.expirationDate), 22);
             remaining.setTextColor(Color.parseColor("#A84F00")); remaining.setPadding(0, dp(12), 0, dp(8));
             content.addView(remaining);
+            expiryLabels.put(remaining, permit.expirationDate);
             content.addView(label("Expires: " + date(permit.expirationDate), 14));
             content.addView(label(permit.notificationEnabled ? "Reminder: " + date(permit.reminderDate) : "Reminders off", 14));
             LinearLayout buttons = new LinearLayout(activity);
@@ -71,6 +74,12 @@ public final class PermitsController {
             buttons.addView(delete, new LinearLayout.LayoutParams(0, -2, 1));
             content.addView(buttons);
         }
+    }
+
+    // Update visible date labels even if the alerts page stays open through midnight.
+    public void tick() {
+        for (java.util.Map.Entry<TextView, Long> entry : expiryLabels.entrySet())
+            entry.getKey().setText(remaining(entry.getValue()));
     }
 
     public void edit(ParkingPermit existing) {

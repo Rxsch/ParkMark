@@ -7,6 +7,7 @@
     android:orientation="vertical"
     android:background="#F7F8FA">
 
+    <!-- The shared header keeps the menu available on every tab. -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="56dp">
@@ -20,20 +21,21 @@
             android:padding="12dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_menu"
-            android:contentDescription="Open menu"
+            android:contentDescription="@string/open_menu"
             app:tint="#202020" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="ParkMark"
+            android:text="@string/app_name"
             android:textColor="#202020"
             android:textSize="20sp"
             android:textStyle="bold" />
 
     </FrameLayout>
 
+    <!-- Main content scrolls independently from the bottom navigation. -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -52,7 +54,7 @@
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="12dp"
                 android:layout_marginBottom="20dp"
-                android:text="Parking Alerts"
+                android:text="@string/parking_alerts"
                 android:textColor="#FF8A26"
                 android:textSize="30sp"
                 android:textStyle="bold" />
@@ -97,7 +99,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="CURRENT PARKING"
+                                android:text="@string/current_parking"
                                 android:textColor="#FF8A00"
                                 android:textSize="12sp"
                                 android:textStyle="bold" />
@@ -106,7 +108,7 @@
                                 android:id="@+id/alertSavedTimeText"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Saved 2h ago"
+                                android:text="@string/not_parked_yet"
                                 android:textColor="#858585"
                                 android:textSize="12sp" />
 
@@ -119,7 +121,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="14dp"
-                        android:text="4304 Scorpius St, Orlando, FL 32816"
+                        android:text="@string/no_parking_location_saved"
                         android:textColor="#292929"
                         android:textSize="20sp"
                         android:textStyle="bold" />
@@ -129,7 +131,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:text="Level 3 • Row C • Near elevator 2"
+                        android:text="@string/no_parking_notes_added"
                         android:textColor="#858585"
                         android:textSize="14sp" />
 
@@ -150,7 +152,7 @@
                             android:background="@drawable/bg_alert_badge"
                             android:gravity="center"
                             android:padding="8dp"
-                            android:text="00h 30m Left"
+                            android:text="@string/no_timer_set"
                             android:textColor="#FF8A26"
                             android:textSize="18sp"
                             android:textStyle="bold" />
@@ -163,7 +165,7 @@
                             android:minHeight="48dp"
                             android:paddingStart="8dp"
                             android:paddingEnd="8dp"
-                            android:text="Extend time"
+                            android:text="@string/extend_time"
                             android:textAllCaps="false"
                             android:textColor="#FF8A00"
                             android:textSize="12sp"
@@ -180,23 +182,23 @@
 
             </com.google.android.material.card.MaterialCardView>
 
-            <com.google.android.material.button.MaterialButton android:id="@+id/cancelTimerButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Cancel timer" />
+            <com.google.android.material.button.MaterialButton android:id="@+id/cancelTimerButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/cancel_timer" />
             <TextView android:id="@+id/reminderStatusText" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="#575757" android:padding="8dp" />
-            <com.google.android.material.button.MaterialButton android:id="@+id/reminderSettingsButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Reminder settings" />
+            <com.google.android.material.button.MaterialButton android:id="@+id/reminderSettingsButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/reminder_settings" />
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="32dp"
                 android:layout_marginBottom="16dp"
-                android:text="Subscriptions"
+                android:text="@string/subscriptions"
                 android:textColor="#FF8A26"
                 android:textSize="30sp"
                 android:textStyle="bold" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/addPermitButton" android:layout_width="match_parent"
-                android:layout_height="wrap_content" android:text="Add parking permit" />
+                android:layout_height="wrap_content" android:text="@string/add_parking_permit" />
             <LinearLayout android:id="@+id/permitContainer" android:layout_width="match_parent"
                 android:layout_height="wrap_content" android:orientation="vertical" />
 
@@ -209,6 +211,7 @@
         android:layout_height="1dp"
         android:background="#E6E6E6" />
 
+    <!-- Persistent navigation mirrors the four screens in the design document. -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"

@@ -61,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
     private CancellationTokenSource locationRequest;
     private boolean newParking = true;
     private boolean locating;
+    private long locationGeneration;
     private Toast toast;
 
     // Register activity results before creation so camera and permission results survive recreation.
@@ -116,6 +117,8 @@ public class MainActivity extends AppCompatActivity {
     // Preserve unsaved notes before switching screens and release each map exactly once.
     private void showPage(int tab) {
         persistDetails();
+        ImageView previousImage = findViewById(R.id.parkingPhoto);
+        if (previousImage != null) previousImage.setTag(null);
         parkingMap.destroy();
         currentTab = tab;
         editorLocationId = -1;
@@ -127,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
             Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
             Insets keyboard = insets.getInsets(WindowInsetsCompat.Type.ime());
             view.setPadding(bars.left, bars.top, bars.right, Math.max(bars.bottom, keyboard.bottom));
-            return insets;
+            return WindowInsetsCompat.CONSUMED;
         });
         ViewCompat.requestApplyInsets(findViewById(R.id.main));
         BottomNavigationView navigation = findViewById(R.id.bottomNavigation);
@@ -182,6 +185,7 @@ public class MainActivity extends AppCompatActivity {
 
     // Render real data and empty states while leaving in-progress edits untouched.
     private void renderState() {
+        if (isDestroyed()) return;
         ParkingLocation location = current();
         String address = location == null ? "No parking location saved" : location.address;
         String details = location == null ? "Tap the location button to park." : details(location);
@@ -190,11 +194,13 @@ public class MainActivity extends AppCompatActivity {
         text(R.id.parkingAddressText, address);
         text(R.id.parkingDetailsText, details);
         text(R.id.alertParkingDetailsText, details);
+        text(R.id.extendTimeButton, state != null && state.timer != null ? "Extend time" : "Set timer");
         text(R.id.locationStatusText, locating ? "Finding your location…" : "Tap to save a new parking spot");
         updateClock();
         if (currentTab == R.id.navTimer) {
             alerts.renderStatus(state);
             permits.render(state == null ? java.util.Collections.emptyList() : state.permits);
+            findViewById(R.id.addPermitButton).setEnabled(state != null);
         }
         if (currentTab == R.id.navParking) {
             boolean exists = location != null;
@@ -274,6 +280,7 @@ public class MainActivity extends AppCompatActivity {
         locating = true;
         renderState();
         locationRequest = new CancellationTokenSource();
+        long generation = ++locationGeneration;
         long existingId = current() == null ? 0 : current().id;
         boolean create = newParking;
         try {
@@ -281,26 +288,34 @@ public class MainActivity extends AppCompatActivity {
                     .setPriority(Priority.PRIORITY_HIGH_ACCURACY).setMaxUpdateAgeMillis(0).setDurationMillis(20_000).build();
             LocationServices.getFusedLocationProviderClient(this).getCurrentLocation(request, locationRequest.getToken())
                     .addOnSuccessListener(this, location -> {
+                        if (generation != locationGeneration) return;
                         locating = false;
                         renderState();
                         if (location == null) { locationFailed(); return; }
                         saveLocation(location.getLatitude(), location.getLongitude(), create, existingId);
-                    }).addOnFailureListener(this, error -> { locating = false; renderState(); locationFailed(); });
+                    }).addOnFailureListener(this, error -> {
+                        if (generation != locationGeneration) return;
+                        locating = false; renderState(); locationFailed();
+                    });
         } catch (SecurityException error) { locating = false; renderState(); locationFailed(); }
     }
     private void locationFailed() {
         new MaterialAlertDialogBuilder(this).setTitle("Location unavailable")
                 .setMessage("Turn on Location in your device settings and try again, or enter the parking coordinates manually.")
-                .setPositiveButton("Enter coordinates", (dialog, which) -> manualLocation())
+                .setPositiveButton("Enter coordinates", (dialog, which) -> manualLocation(newParking))
                 .setNegativeButton("Cancel", null).show();
     }
 
     // Save a new session atomically, or update the current session without losing its notes and timer.
     private void saveLocation(double latitude, double longitude, boolean create, long existingId) {
         persistDetails();
+        locating = true;
+        renderState();
         long[] savedId = new long[1];
         repository.change(dao -> {
             ParkingLocation location = create ? null : dao.location(existingId);
+            if (!create && (location == null || !location.active))
+                throw new IllegalStateException("Parking session changed while GPS was updating");
             if (location == null) {
                 dao.endCurrent();
                 location = new ParkingLocation();
@@ -312,6 +327,8 @@ public class MainActivity extends AppCompatActivity {
             if (location.id == 0) location.id = dao.insertLocation(location); else dao.updateLocation(location);
             savedId[0] = location.id;
         }, error -> {
+            locating = false;
+            renderState();
             if (error != null) { message("Could not save the location. Please try again."); return; }
             if (isDestroyed()) return;
             showPage(R.id.navParking);
@@ -319,8 +336,14 @@ public class MainActivity extends AppCompatActivity {
             resolveAddress(savedId[0], latitude, longitude);
         });
     }
-    private void manualLocation() {
+    private void manualLocation() { manualLocation(true); }
+    private void manualLocation(boolean create) {
         if (state == null) return;
+        long existingId = current() == null ? 0 : current().id;
+        locationGeneration++;
+        if (locationRequest != null) locationRequest.cancel();
+        locating = false;
+        renderState();
         FormDialog form = new FormDialog(this);
         int number = InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL | InputType.TYPE_NUMBER_FLAG_SIGNED;
         EditText lat = form.field("Latitude (−90 to 90)", "", number, 20);
@@ -330,7 +353,7 @@ public class MainActivity extends AppCompatActivity {
                 double latitude = Double.parseDouble(lat.getText().toString().trim());
                 double longitude = Double.parseDouble(lon.getText().toString().trim());
                 if (!LegacyParkingImporter.validCoordinates(latitude, longitude)) throw new NumberFormatException();
-                saveLocation(latitude, longitude, true, 0);
+                saveLocation(latitude, longitude, create || existingId == 0, existingId);
                 return true;
             } catch (NumberFormatException error) { lat.setError("Enter valid latitude and longitude values."); return false; }
         });
@@ -359,7 +382,8 @@ public class MainActivity extends AppCompatActivity {
     private void choosePhoto() {
         if (!requireParking()) return;
         photoLocationId = current().id;
-        photoPicker.launch(new String[]{"image/*"});
+        try { photoPicker.launch(new String[]{"image/*"}); }
+        catch (ActivityNotFoundException missingPicker) { message("No photo picker is available on this device."); }
     }
     private void takePhoto() {
         if (!requireParking()) return;
@@ -369,7 +393,10 @@ public class MainActivity extends AppCompatActivity {
             if (!folder.exists() && !folder.mkdirs()) throw new java.io.IOException();
             cameraFile = File.createTempFile("parking-", ".jpg", folder);
             camera.launch(FileProvider.getUriForFile(this, getPackageName() + ".files", cameraFile));
-        } catch (ActivityNotFoundException error) { message("No camera app is installed. Use Choose Photo instead."); }
+        } catch (ActivityNotFoundException error) {
+            if (cameraFile != null) cameraFile.delete();
+            message("No camera app is installed. Use Choose Photo instead.");
+        }
         catch (java.io.IOException error) { message("Could not create the camera file."); }
     }
     private void savePhoto(Uri uri) {
@@ -543,6 +570,7 @@ public class MainActivity extends AppCompatActivity {
         text(R.id.savedTimeText, saved); text(R.id.alertSavedTimeText, saved);
         String remaining = TimeText.remaining(state == null || state.timer == null ? 0 : state.timer.expirationTime, now);
         text(R.id.timeRemainingText, remaining); text(R.id.parkingTimeLeftText, remaining);
+        if (currentTab == R.id.navTimer && permits != null) permits.tick();
     }
     private final Runnable ticker = new Runnable() {
         @Override public void run() { updateClock(); handler.postDelayed(this, 1000); }
@@ -563,11 +591,17 @@ public class MainActivity extends AppCompatActivity {
     }
     @Override protected void onPause() { persistDetails(); handler.removeCallbacks(ticker); parkingMap.pause(); super.onPause(); }
     @Override protected void onStop() {
+        locationGeneration++;
         if (locationRequest != null) locationRequest.cancel();
         locating = false;
         parkingMap.stop(); super.onStop();
     }
-    @Override protected void onDestroy() { handler.removeCallbacks(ticker); parkingMap.destroy(); super.onDestroy(); }
+    @Override protected void onDestroy() {
+        handler.removeCallbacks(ticker);
+        if (locationRequest != null) locationRequest.cancel();
+        parkingMap.destroy();
+        super.onDestroy();
+    }
     @Override public void onLowMemory() { super.onLowMemory(); parkingMap.lowMemory(); }
     @Override protected void onSaveInstanceState(Bundle out) {
         persistDetails();

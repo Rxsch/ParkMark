@@ -28,6 +28,8 @@ public final class ParkingMap {
     private boolean resumed;
     private ParkingLocation location;
     private long shownId = -1;
+    private double shownLatitude = Double.NaN;
+    private double shownLongitude = Double.NaN;
 
     public ParkingMap(AppCompatActivity activity) { this.activity = activity; }
 
@@ -82,8 +84,9 @@ public final class ParkingMap {
         com.google.android.gms.maps.model.Marker marker = map.addMarker(new MarkerOptions()
                 .position(target).title("Your parked car").snippet(current.address));
         if (marker != null) marker.showInfoWindow();
-        if (shownId != current.id) map.moveCamera(CameraUpdateFactory.newLatLngZoom(target, 17f));
-        shownId = current.id;
+        if (shownId != current.id || shownLatitude != current.latitude || shownLongitude != current.longitude)
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(target, 17f));
+        shownId = current.id; shownLatitude = current.latitude; shownLongitude = current.longitude;
     }
 
     // Walking directions use the saved destination and need no location permission from ParkMark.
