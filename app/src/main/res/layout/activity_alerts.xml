@@ -194,48 +194,11 @@
                 android:textSize="30sp"
                 android:textStyle="bold" />
 
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp"
-                app:cardBackgroundColor="#FFFFFF"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="0dp"
-                app:strokeColor="#DFE1E6"
-                app:strokeWidth="1dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:minHeight="140dp"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:id="@+id/subscriptionNameText"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="No permits saved"
-                        android:textColor="#292929"
-                        android:textSize="20sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/subscriptionDaysLeftText"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:background="@drawable/bg_alert_badge"
-                        android:paddingHorizontal="14dp"
-                        android:paddingVertical="12dp"
-                        android:text="Add a parking permit to track its expiry"
-                        android:textColor="#FF8A26"
-                        android:textSize="20sp"
-                        android:textStyle="bold" />
-
-                </LinearLayout>
-
-            </com.google.android.material.card.MaterialCardView>
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/addPermitButton" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:text="Add parking permit" />
+            <LinearLayout android:id="@+id/permitContainer" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:orientation="vertical" />
 
         </LinearLayout>
 

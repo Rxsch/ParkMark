@@ -85,4 +85,32 @@ public class ReminderTest {
         Reminders.reconcile(context, dao);
         assertTrue(dao.timer(locationId).expirationDelivered);
     }
+    @Test public void permitsHaveIndependentAlarmsAndOnlyTheDuePermitNotifies() {
+        ParkingPermit soon = new ParkingPermit();
+        soon.name = "UCF"; soon.expirationDate = System.currentTimeMillis() + 86_400_000;
+        soon.reminderDate = System.currentTimeMillis() - 1000;
+        soon.id = dao.insertPermit(soon);
+        ParkingPermit later = new ParkingPermit();
+        later.name = "City garage"; later.expirationDate = System.currentTimeMillis() + 7 * 86_400_000L;
+        later.reminderDate = System.currentTimeMillis() + 6 * 86_400_000L;
+        later.id = dao.insertPermit(later);
+        Reminders.reconcile(context, dao);
+        assertTrue(dao.permit(soon.id).reminderDelivered);
+        assertFalse(dao.permit(later.id).reminderDelivered);
+        assertEquals(1, Shadows.shadowOf(context.getSystemService(NotificationManager.class)).size());
+        assertEquals(3, Shadows.shadowOf(context.getSystemService(AlarmManager.class)).getScheduledAlarms().size());
+    }
+
+    @Test public void retentionDeletesOnlyTheExpiredPhoto() {
+        ParkingPhoto expired = new ParkingPhoto();
+        expired.locationId = locationId; expired.deleteAfter = System.currentTimeMillis() - 1000;
+        dao.insertPhoto(expired);
+        ParkingPhoto kept = new ParkingPhoto();
+        kept.locationId = locationId; kept.uri = "photos/keep.jpg";
+        dao.insertPhoto(kept);
+        Reminders.reconcile(context, dao);
+        assertEquals(1, dao.photos(locationId).size());
+        assertEquals("photos/keep.jpg", dao.photos(locationId).get(0).uri);
+    }
+
 }

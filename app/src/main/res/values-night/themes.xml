@@ -5,7 +5,6 @@
         <item name="colorOnPrimary">#FFFFFF</item>
         <item name="colorSecondary">#FF8A00</item>
         <item name="android:windowLightStatusBar">true</item>
-        <item name="android:windowLightNavigationBar">true</item>
 
     </style>
 </resources>

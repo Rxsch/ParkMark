@@ -74,4 +74,22 @@ public class ParkDatabaseTest {
             assertNotNull(dao.timer(locationId));
         }
     }
+    @Test public void locationAndPermitPersistAfterDatabaseReopens() {
+        String name = "persistence-test.db";
+        context.deleteDatabase(name);
+        ParkDatabase fileDatabase = Room.databaseBuilder(context, ParkDatabase.class, name).allowMainThreadQueries().build();
+        fileDatabase.dao().insertUser(new UserProfile());
+        ParkingLocation location = new ParkingLocation(); location.address = "Garage B";
+        fileDatabase.dao().insertLocation(location);
+        ParkingPermit permit = new ParkingPermit(); permit.name = "UCF"; permit.expirationDate = 123456789;
+        fileDatabase.dao().insertPermit(permit);
+        fileDatabase.close();
+        fileDatabase = Room.databaseBuilder(context, ParkDatabase.class, name).allowMainThreadQueries().build();
+        assertEquals("Garage B", fileDatabase.dao().current().address);
+        assertEquals("UCF", fileDatabase.dao().permits().get(0).name);
+        assertEquals(123456789, fileDatabase.dao().permits().get(0).expirationDate);
+        fileDatabase.close();
+        context.deleteDatabase(name);
+    }
+
 }

@@ -96,6 +96,7 @@
                 <com.google.android.material.button.MaterialButton android:id="@+id/previousPhotoButton" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Previous" />
                 <com.google.android.material.button.MaterialButton android:id="@+id/nextPhotoButton" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Next" />
             </LinearLayout>
+            <com.google.android.material.button.MaterialButton android:id="@+id/photoRetentionButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Photo retention" />
             <com.google.android.material.button.MaterialButton android:id="@+id/removePhotoButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Remove photo" />
             <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:text="Garage level" android:labelFor="@id/levelInput" android:textColor="#292929" />
             <EditText android:id="@+id/levelInput" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:inputType="textCapSentences" android:hint="e.g. 3" android:maxLength="50" android:textColor="#292929" />

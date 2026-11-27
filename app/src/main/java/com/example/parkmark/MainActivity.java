@@ -29,6 +29,7 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.parkmark.data.*;
 import com.example.parkmark.ui.FormDialog;
 import com.example.parkmark.ui.AlertsController;
+import com.example.parkmark.ui.PermitsController;
 import com.example.parkmark.ui.ParkingMap;
 import com.example.parkmark.util.PhotoStorage;
 import com.example.parkmark.util.TimeText;
@@ -51,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
     private ParkingState state;
     private ParkingMap parkingMap;
     private AlertsController alerts;
+    private PermitsController permits;
     private int currentTab = R.id.navHome;
     private long editorLocationId = -1;
     private long photoLocationId = -1;
@@ -83,9 +85,12 @@ public class MainActivity extends AppCompatActivity {
     // Observe database snapshots; all four pages read the same persistent parking state.
     @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        androidx.core.view.WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView())
+                .setAppearanceLightNavigationBars(true);
         repository = ParkRepository.get(this);
         parkingMap = new ParkingMap(this);
         alerts = new AlertsController(this, repository, this::message, this::requestNotifications);
+        permits = new PermitsController(this, repository, this::message, this::requestNotifications);
         if (getIntent().getBooleanExtra("openAlerts", false)) currentTab = R.id.navTimer;
         if (savedInstanceState != null) {
             currentTab = savedInstanceState.getInt("tab", R.id.navHome);
@@ -148,6 +153,8 @@ public class MainActivity extends AppCompatActivity {
         click(R.id.alertExtendTimeButton, () -> alerts.timer(state));
         click(R.id.cancelTimerButton, () -> alerts.cancelTimer(state));
         click(R.id.reminderSettingsButton, alerts::settings);
+        click(R.id.addPermitButton, () -> { if (state != null) permits.edit(null); });
+        click(R.id.photoRetentionButton, this::photoRetention);
         if (tab == R.id.navMap) parkingMap.attach(findViewById(R.id.mapContainer), current());
         renderState();
     }
@@ -185,7 +192,10 @@ public class MainActivity extends AppCompatActivity {
         text(R.id.alertParkingDetailsText, details);
         text(R.id.locationStatusText, locating ? "Finding your location…" : "Tap to save a new parking spot");
         updateClock();
-        if (currentTab == R.id.navTimer) alerts.renderStatus(state);
+        if (currentTab == R.id.navTimer) {
+            alerts.renderStatus(state);
+            permits.render(state == null ? java.util.Collections.emptyList() : state.permits);
+        }
         if (currentTab == R.id.navParking) {
             boolean exists = location != null;
             for (int id : new int[]{R.id.notesInput, R.id.levelInput, R.id.spotInput,
@@ -391,10 +401,13 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.previousPhotoButton).setEnabled(photoIndex > 0);
         findViewById(R.id.nextPhotoButton).setEnabled(photoIndex + 1 < count);
         findViewById(R.id.removePhotoButton).setEnabled(count > 0);
+        findViewById(R.id.photoRetentionButton).setEnabled(count > 0);
         Object token = new Object(); image.setTag(token);
         image.setImageResource(R.drawable.ic_car);
         if (count == 0) return;
         ParkingPhoto photo = state.photos.get(photoIndex);
+        text(R.id.photoCountText, "Photo " + (photoIndex + 1) + " of " + count
+                + (photo.deleteAfter > 0 ? " • Auto-removes " + TimeText.dateTime(photo.deleteAfter) : " • Kept until removed"));
         PHOTOS.execute(() -> {
             try {
                 Bitmap bitmap = PhotoStorage.decode(getApplicationContext(), photo.uri, 1024);
@@ -405,6 +418,19 @@ public class MainActivity extends AppCompatActivity {
             } catch (Exception ignored) { /* A removed legacy gallery image falls back to the car icon. */ }
         });
     }
+    // Let the user choose retention for an app-owned photo without affecting the gallery original.
+    private void photoRetention() {
+        if (state == null || state.photos.isEmpty()) return;
+        ParkingPhoto photo = state.photos.get(photoIndex);
+        new MaterialAlertDialogBuilder(this).setTitle("Keep this parking photo")
+                .setItems(new String[]{"Until I remove it", "1 day", "7 days", "30 days"}, (dialog, which) -> {
+                    long[] days = {0, 1, 7, 30};
+                    long deadline = which == 0 ? 0 : System.currentTimeMillis() + days[which] * 86_400_000L;
+                    repository.change(dao -> dao.setPhotoExpiry(photo.id, deadline), error ->
+                            message(error == null ? "Photo retention updated." : "Could not update photo retention."));
+                }).setNegativeButton("Cancel", null).show();
+    }
+
     private void removePhoto() {
         if (state == null || state.photos.isEmpty()) return;
         ParkingPhoto photo = state.photos.get(photoIndex);
