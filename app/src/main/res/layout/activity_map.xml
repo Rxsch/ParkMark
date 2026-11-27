@@ -39,11 +39,12 @@
         android:layout_height="0dp"
         android:layout_weight="1">
 
-        <com.google.android.gms.maps.MapView
-            android:id="@+id/googleMapView"
+        <FrameLayout
+            android:id="@+id/mapContainer"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
+        <TextView android:id="@+id/mapStatusText" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_gravity="top" android:background="#EEFFFFFF" android:padding="12dp" android:textColor="#292929" android:text="No parking location saved" />
         <com.google.android.material.button.MaterialButton
             android:id="@+id/navigateButton"
             android:layout_width="220dp"

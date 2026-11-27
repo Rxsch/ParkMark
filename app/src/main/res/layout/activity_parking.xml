@@ -55,7 +55,7 @@
                 android:textStyle="bold" />
 
             <com.google.android.material.card.MaterialCardView
-                android:layout_width="240dp"
+                android:layout_width="match_parent"
                 android:layout_height="164dp"
                 android:layout_marginTop="8dp"
                 app:cardBackgroundColor="#ECEFF1"
@@ -69,7 +69,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_margin="2dp"
-                    android:src="@drawable/carparked"
+                    android:src="@drawable/ic_car"
                     android:scaleType="centerCrop"
                     android:contentDescription="Photo of your parked car" />
 
@@ -77,15 +77,30 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/selectPhotoButton"
-                android:layout_width="240dp"
+                android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:layout_marginTop="10dp"
-                android:text="Choose Parking Photo"
+                android:text="Choose Photo"
                 android:textAllCaps="false"
                 android:textColor="#FFFFFF"
                 app:backgroundTint="#FF8A00"
                 app:cornerRadius="16dp" />
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/takePhotoButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Take Photo" />
+            <TextView android:id="@+id/photoCountText" android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:textColor="#292929" android:text="No parking photos yet" />
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+                <com.google.android.material.button.MaterialButton android:id="@+id/previousPhotoButton" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Previous" />
+                <com.google.android.material.button.MaterialButton android:id="@+id/nextPhotoButton" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Next" />
+            </LinearLayout>
+            <com.google.android.material.button.MaterialButton android:id="@+id/removePhotoButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Remove photo" />
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:text="Garage level" android:labelFor="@id/levelInput" android:textColor="#292929" />
+            <EditText android:id="@+id/levelInput" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:inputType="textCapSentences" android:hint="e.g. 3" android:maxLength="50" android:textColor="#292929" />
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Parking spot / row" android:labelFor="@id/spotInput" android:textColor="#292929" />
+            <EditText android:id="@+id/spotInput" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="48dp" android:inputType="textCapSentences" android:hint="e.g. Row C, space 24" android:maxLength="100" android:textColor="#292929" />
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -115,7 +130,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:layout_marginTop="12dp"
-                android:text="Save Notes"
+                android:text="Save Details"
                 android:textAllCaps="false"
                 android:textColor="#FFFFFF"
                 app:backgroundTint="#FF8A00"
@@ -130,6 +145,7 @@
                 android:textSize="24sp"
                 android:textStyle="bold" />
 
+            <TextView android:id="@+id/parkingAddressText" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="#292929" android:text="No parking location saved" />
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/updateLocationButton"
                 android:layout_width="160dp"
@@ -148,6 +164,7 @@
                 app:iconSize="18dp"
                 app:iconTint="#FF8A00" />
 
+            <com.google.android.material.button.MaterialButton android:id="@+id/endParkingButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Finish Parking" />
         </LinearLayout>
 
     </ScrollView>

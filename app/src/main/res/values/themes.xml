@@ -1,5 +1,10 @@
 <resources>
-    <style name="Base.Theme.ParkMark" parent="Theme.Material3.DayNight.NoActionBar">
+    <style name="Base.Theme.ParkMark" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">#A84F00</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorSecondary">#FF8A00</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
 
     </style>
 

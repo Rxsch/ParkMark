@@ -66,6 +66,15 @@
 
             </FrameLayout>
 
+            <TextView
+                android:id="@+id/locationStatusText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:paddingBottom="16dp"
+                android:text="Tap to save a new parking spot"
+                android:textColor="#575757" />
+
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
